@@ -1,11 +1,12 @@
 Id	Description	Qty	Unit	Designators
 1	Cable, Dupont jumper, 1 x 0.25 mm²	0.2	m	JUMPER_SIM
-2	Cable, Dupont jumper, 2 x 0.25 mm²	0.6	m	W_BTN, W_FLOWLED, W_VALVE
+2	Cable, Dupont jumper, 2 x 0.25 mm²	0.8	m	W_BTN, W_FLOWLED, W_RESET, W_VALVE
 3	Cable, Dupont jumper, 3 x 0.25 mm²	0.2	m	W_POT
 4	Cable, Dupont jumper, 4 x 0.25 mm²	0.2	m	W_OLED
-5	Connector, ESP32 DevKit V1 (30-pin), header pins, 10 pins	1		ESP32
+5	Connector, ESP32 DevKit V1 (30-pin), header pins, 11 pins	1		ESP32
 6	Connector, Green LED + 220 Ω, water is flowing, 2 pins	1		LED_FLOW
 7	Connector, Potentiometer 10 kΩ, volume knob, 3 pins	1		POT_VOLUME
 8	Connector, Red LED + 220 Ω, stands in for the valve, 2 pins	1		LED_VALVE
 9	Connector, SSD1306 0.96" I2C, 4 pins	1		OLED
-10	Connector, Tactile button, start / stop, 2 pins	1		BUTTON
+10	Connector, Tactile button, reset, 2 pins	1		BUTTON_RESET
+11	Connector, Tactile button, start / pause / resume, 2 pins	1		BUTTON

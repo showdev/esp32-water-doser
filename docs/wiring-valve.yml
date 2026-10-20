@@ -1,0 +1,84 @@
+# WireViz harness for the REAL device (12 V plan, built with: pio run -e real): valve, D4184 driver, flyback diode.
+# Render:  wireviz docs/wiring-valve.yml   -> wiring-valve.svg / .png / .bom.tsv  (delete the .html)
+# Source of truth for pins is ../PINOUT.md and src/main.cpp.
+# Connectors named "... (from wiring-xxx)" are stubs: the real block is drawn in that other file.
+# Terminal strips are separate per net (TB_12V, TB_5V, TB_GND): all pins on one strip are joined.
+
+metadata:
+  title: Water dispenser — valve and driver
+  pn: elefun/wiring-valve
+
+templates:
+  - &dupont
+    type: Dupont jumper
+    gauge: 0.25 mm2
+    length: 0.2
+  - &power
+    type: Power wire, stranded
+    gauge: 0.75 mm2
+    length: 0.5
+  - &signal
+    type: Hookup wire, stranded
+    gauge: 0.25 mm2
+    length: 0.5
+
+connectors:
+  "+12V (from wiring-power)":
+    type: Terminal strip TB_12V
+    pinlabels: ["+12V"]
+
+  "GND (from wiring-power)":
+    type: Terminal strip TB_GND
+    pinlabels: [GND]
+
+  "ESP32 (see wiring-esp)":
+    type: ESP32 DevKit V1 (30-pin)
+    pinlabels: [D25, GND]
+
+  DRIVER_D4184:
+    type: D4184 MOSFET driver, 3.3 V logic
+    subtype: not IRF520 modules
+    pinlabels: [TRIG, GND, VIN-, OUT-]
+    notes: Labels vary by seller. OUT- = valve switched side.
+
+  VALVE:
+    type: Solenoid valve 12 V, NC, 1/2"
+    subtype: ASSUMPTION, depends on pressure
+    pinlabels: ["+", "-"]
+
+  DIODE_FLYBACK:
+    type: Diode 1N4007 / 1N5819
+    subtype: across the valve coil
+    pinlabels: [Cathode (stripe), Anode]
+
+cables:
+  W_VALVE_P: {<<: *power, wirecount: 1, colors: [RD]}
+  W_VALVE_N: {<<: *power, wirecount: 1, colors: [BN]}
+  W_DRV_GND: {<<: *signal, wirecount: 1, colors: [BK]}
+  W_DRV_SIG:
+    <<: *dupont
+    wirecount: 2
+    colors: [GN, BK]
+  W_DIODE:
+    <<: *signal
+    type: Diode legs, soldered to the valve terminals
+    wirecount: 2
+    colors: [RD, BK]
+    length: 0.1
+
+connections:
+  - - "ESP32 (see wiring-esp)": [1, 2]
+    - W_DRV_SIG: [1, 2]
+    - DRIVER_D4184: [1, 2]
+  - - "GND (from wiring-power)": [1]
+    - W_DRV_GND: [1]
+    - DRIVER_D4184: [3]
+  - - VALVE: [1]
+    - W_VALVE_P: [1]
+    - "+12V (from wiring-power)": [1]
+  - - VALVE: [2]
+    - W_VALVE_N: [1]
+    - DRIVER_D4184: [4]
+  - - VALVE: [1, 2]
+    - W_DIODE: [1, 2]
+    - DIODE_FLYBACK: [1, 2]

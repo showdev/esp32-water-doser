@@ -1,0 +1,11 @@
+Id	Description	Qty	Unit	Designators
+1	Cable, Hookup wire, stranded, 2 x 0.25 mm²	0.5	m	W_ESP_PWR
+2	Cable, Power wire, stranded, 1 x 0.75 mm²	1.5	m	W_FUSE, W_PSU_N, W_PSU_P
+3	Cable, Power wire, stranded, 2 x 0.75 mm²	1	m	W_BUCK_IN, W_BUCK_OUT
+4	Connector, Buck module LM2596 / MP1584, set 5.0 V BEFORE ESP32, 4 pins	1		BUCK_5V
+5	Connector, ESP32 DevKit V1 (30-pin), power pins only, 2 pins	1		ESP32
+6	Connector, Fuse holder + 2 A fuse, on the +12 V wire, 2 pins	1		FUSE_2A
+7	Connector, Power supply 12 V DC, 2 A min., screw terminals, 2 pins	1		PSU_12V
+8	Connector, Terminal strip +12 V, all pins joined, 3 pins	1		TB_12V
+9	Connector, Terminal strip +5 V, all pins joined, 3 pins	1		TB_5V
+10	Connector, Terminal strip GND, all pins joined, 6 pins	1		TB_GND

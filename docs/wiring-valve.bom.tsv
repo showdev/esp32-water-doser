@@ -1,0 +1,11 @@
+Id	Description	Qty	Unit	Designators
+1	Cable, Diode legs, soldered to the valve terminals, 2 x 0.25 mm²	0.1	m	W_DIODE
+2	Cable, Dupont jumper, 2 x 0.25 mm²	0.2	m	W_DRV_SIG
+3	Cable, Hookup wire, stranded, 1 x 0.25 mm²	0.5	m	W_DRV_GND
+4	Cable, Power wire, stranded, 1 x 0.75 mm²	1	m	W_VALVE_N, W_VALVE_P
+5	Connector, D4184 MOSFET driver, 3.3 V logic, not IRF520 modules, 4 pins	1		DRIVER_D4184
+6	Connector, Diode 1N4007 / 1N5819, across the valve coil, 2 pins	1		DIODE_FLYBACK
+7	Connector, ESP32 DevKit V1 (30-pin), 2 pins	1		ESP32 (see wiring-esp)
+8	Connector, Solenoid valve 12 V, NC, 1/2", ASSUMPTION, depends on pressure, 2 pins	1		VALVE
+9	Connector, Terminal strip TB_12V, 1 pins	1		+12V (from wiring-power)
+10	Connector, Terminal strip TB_GND, 1 pins	1		GND (from wiring-power)

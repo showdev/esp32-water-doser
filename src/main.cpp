@@ -1,7 +1,8 @@
 // Water dispenser — ESP32 DevKit V1
 //
-// Pot sets a volume, button starts dispensing, the flow sensor counts pulses,
-// the valve closes when the target is reached (or on no-flow / button stop).
+// Pot sets a volume. START starts a pour, pauses it, and resumes it. RESET aborts
+// and clears. The flow sensor counts pulses; the valve closes when the target is
+// reached, and pauses on no-flow.
 //
 // SIMULATE_FLOW=1 (env:sim): the ESP32 generates fake flow-sensor pulses on
 // SIM_OUT_PIN while the valve is open. Wire SIM_OUT_PIN -> FLOW_PIN with a
@@ -24,7 +25,8 @@
 // ===== Pins =====
 const int POT_PIN      = 34;  // volume pot (input-only ADC pin)
 const int RATE_POT_PIN = 35;  // optional flow-rate pot for the simulator
-const int BUTTON_PIN   = 26;  // to GND, internal pull-up
+const int BUTTON_PIN   = 26;  // START: to GND, internal pull-up
+const int RESET_PIN    = 13;  // RESET: to GND, internal pull-up
 const int FLOW_PIN     = 27;  // flow sensor signal (3.3 V level!)
 const int SIM_OUT_PIN  = 32;  // simulator output, jumper to FLOW_PIN
 const int VALVE_PIN    = 25;  // LED now, relay/MOSFET later
@@ -51,7 +53,8 @@ volatile unsigned long pulseCount  = 0;
 volatile unsigned long lastPulseMs = 0;
 volatile bool valveOpen = false;
 
-bool running = false;
+enum State { IDLE, RUNNING, PAUSED };
+State state = IDLE;
 unsigned long targetPulses = 0;
 const char* statusMsg = "Готово";
 
@@ -60,6 +63,13 @@ void IRAM_ATTR onPulse() {
   pulseCount++;
   lastPulseMs = millis();
   portEXIT_CRITICAL_ISR(&pulseMux);
+}
+
+// Restart the no-flow timer without touching the count (used on resume).
+void touchLastPulse() {
+  portENTER_CRITICAL(&pulseMux);
+  lastPulseMs = millis();
+  portEXIT_CRITICAL(&pulseMux);
 }
 
 void readPulses(unsigned long& count, unsigned long& lastMs) {
@@ -120,30 +130,65 @@ void startDispense() {
   targetPulses = (unsigned long)(liters * PULSES_PER_LITER);
   if (targetPulses < MIN_PULSES) { statusMsg = "Замало"; return; }
   resetPulses();
-  running = true;
+  state = RUNNING;
   setValve(true);
   statusMsg = "Наливаю";
   Serial.printf("START target=%.2f L (%lu pulses)\n", liters, targetPulses);
 }
 
-void stopDispense(const char* reason) {
-  setValve(false);
-  running = false;
-  statusMsg = reason;
+void logEvent(const char* tag, const char* reason) {
   unsigned long c, lp;
   readPulses(c, lp);
-  Serial.printf("STOP (%s) poured=%.2f L (%lu pulses)\n", reason, c / PULSES_PER_LITER, c);
+  if (reason) Serial.printf("%s (%s) poured=%.2f L (%lu pulses)\n", tag, reason, c / PULSES_PER_LITER, c);
+  else Serial.printf("%s poured=%.2f L (%lu pulses)\n", tag, c / PULSES_PER_LITER, c);
 }
 
+void stopDispense(const char* reason) {
+  setValve(false);
+  state = IDLE;
+  statusMsg = reason;
+  logEvent("STOP", reason);
+}
+
+void pauseDispense(const char* reason, const char* status) {
+  setValve(false);
+  state = PAUSED;
+  statusMsg = status;
+  logEvent("PAUSE", reason);
+}
+
+void resumeDispense() {
+  touchLastPulse();  // so the no-flow timer doesn't fire right away
+  state = RUNNING;
+  setValve(true);
+  statusMsg = "Наливаю";
+  logEvent("RESUME", NULL);
+}
+
+void resetDispense() {
+  setValve(false);
+  logEvent("RESET", NULL);
+  resetPulses();
+  state = IDLE;
+  statusMsg = "Скинуто";
+}
+
+// One debounced button (pulled up, pressed = LOW).
+struct Button {
+  int pin;
+  bool stable, lastRaw;
+  unsigned long changedAt;
+};
+Button startBtn = {BUTTON_PIN, HIGH, HIGH, 0};
+Button resetBtn = {RESET_PIN, HIGH, HIGH, 0};
+
 // Returns true once per debounced press (HIGH -> LOW edge).
-bool buttonPressed() {
-  static bool stable = HIGH, lastRaw = HIGH;
-  static unsigned long changedAt = 0;
-  bool raw = digitalRead(BUTTON_PIN);
-  if (raw != lastRaw) { lastRaw = raw; changedAt = millis(); }
-  if (millis() - changedAt > DEBOUNCE_MS && raw != stable) {
-    stable = raw;
-    return stable == LOW;
+bool buttonPressed(Button& b) {
+  bool raw = digitalRead(b.pin);
+  if (raw != b.lastRaw) { b.lastRaw = raw; b.changedAt = millis(); }
+  if (millis() - b.changedAt > DEBOUNCE_MS && raw != b.stable) {
+    b.stable = raw;
+    return b.stable == LOW;
   }
   return false;
 }
@@ -155,19 +200,20 @@ void drawScreen(bool flowing, unsigned long count) {
   oled.print(statusMsg);
   if (flowing) { oled.setCursor(98, 11); oled.print("~~~"); }
 
-  float target = running ? targetPulses / PULSES_PER_LITER : readLiters();
+  bool active = state != IDLE;
+  float target = active ? targetPulses / PULSES_PER_LITER : readLiters();
   float poured = count / PULSES_PER_LITER;
 
   oled.setFont(u8g2_font_logisoso22_tn);
   oled.setCursor(0, 42);
-  oled.print(running ? poured : target, 2);
+  oled.print(active ? poured : target, 2);
 
   oled.setFont(u8g2_font_6x13_t_cyrillic);
   oled.setCursor(70, 42);
-  if (running) { oled.print("/ "); oled.print(target, 2); }
+  if (active) { oled.print("/ "); oled.print(target, 2); }
   else oled.print("л");
 
-  if (running && targetPulses > 0) {
+  if (active && targetPulses > 0) {
     int w = (int)min(128UL, count * 128UL / targetPulses);
     oled.drawFrame(0, 52, 128, 12);
     oled.drawBox(0, 52, w, 12);
@@ -181,6 +227,7 @@ void drawScreen(bool flowing, unsigned long count) {
 void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(RESET_PIN, INPUT_PULLUP);
   pinMode(VALVE_PIN, OUTPUT);
   setValve(false);
   pinMode(FLOW_LED_PIN, OUTPUT);
@@ -198,9 +245,12 @@ void setup() {
 }
 
 void loop() {
-  if (buttonPressed()) {
-    if (!running) startDispense();
-    else stopDispense("Стоп кнопкою");
+  if (buttonPressed(resetBtn)) {
+    resetDispense();
+  } else if (buttonPressed(startBtn)) {
+    if (state == IDLE) startDispense();
+    else if (state == RUNNING) pauseDispense("Кнопка", "Пауза");
+    else resumeDispense();
   }
 
   unsigned long count, lastMs;
@@ -208,9 +258,9 @@ void loop() {
   bool flowing = millis() - lastMs < FLOW_LED_HOLD_MS;
   digitalWrite(FLOW_LED_PIN, flowing ? HIGH : LOW);
 
-  if (running) {
+  if (state == RUNNING) {
     if (count >= targetPulses) stopDispense("Готово!");
-    else if (millis() - lastMs > NO_FLOW_TIMEOUT_MS) stopDispense("Немає води!");
+    else if (millis() - lastMs > NO_FLOW_TIMEOUT_MS) pauseDispense("Немає води!", "Немає води!");
   }
 
   static unsigned long lastDraw = 0;

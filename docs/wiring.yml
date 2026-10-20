@@ -16,7 +16,7 @@ connectors:
   ESP32:
     type: ESP32 DevKit V1 (30-pin)
     subtype: header pins
-    pinlabels: [3V3, GND, D34, D26, D27, D32, D25, D33, D21, D22]
+    pinlabels: [3V3, GND, D34, D26, D27, D32, D25, D33, D21, D22, D13]
     notes: Use a GND pin on either side; all are common.
 
   POT_VOLUME:
@@ -26,7 +26,12 @@ connectors:
 
   BUTTON:
     type: Tactile button
-    subtype: start / stop
+    subtype: start / pause / resume
+    pinlabels: [A, B]
+
+  BUTTON_RESET:
+    type: Tactile button
+    subtype: reset
     pinlabels: [A, B]
 
   LED_VALVE:
@@ -52,6 +57,10 @@ cables:
     <<: *dupont
     wirecount: 2
     colors: [BU, BK]
+  W_RESET:
+    <<: *dupont
+    wirecount: 2
+    colors: [RD, BK]
   W_VALVE:
     <<: *dupont
     wirecount: 2
@@ -77,6 +86,9 @@ connections:
   - - BUTTON: [1, 2]
     - W_BTN: [1, 2]
     - ESP32: [4, 2]
+  - - BUTTON_RESET: [1, 2]
+    - W_RESET: [1, 2]
+    - ESP32: [11, 2]
   - - LED_VALVE: [1, 2]
     - W_VALVE: [1, 2]
     - ESP32: [7, 2]

@@ -1,0 +1,102 @@
+# WireViz harness for the REAL device (12 V plan, built with: pio run -e real): power supply, fuse, terminal strips, 5 V buck.
+# Render:  wireviz docs/wiring-power.yml   -> wiring-power.svg / .png / .bom.tsv  (delete the .html)
+# Source of truth for pins is ../PINOUT.md and src/main.cpp.
+# Connectors named "... (from wiring-xxx)" are stubs: the real block is drawn in that other file.
+# Terminal strips are separate per net (TB_12V, TB_5V, TB_GND): all pins on one strip are joined.
+
+metadata:
+  title: Water dispenser — power (12 V and 5 V)
+  pn: elefun/wiring-power
+
+templates:
+  - &dupont
+    type: Dupont jumper
+    gauge: 0.25 mm2
+    length: 0.2
+  - &power
+    type: Power wire, stranded
+    gauge: 0.75 mm2
+    length: 0.5
+  - &signal
+    type: Hookup wire, stranded
+    gauge: 0.25 mm2
+    length: 0.5
+
+connectors:
+  PSU_12V:
+    type: Power supply 12 V DC, 2 A min.
+    subtype: screw terminals
+    pinlabels: ["+12V", "0V"]
+
+  FUSE_2A:
+    type: Fuse holder + 2 A fuse
+    subtype: on the +12 V wire
+    pinlabels: [IN, OUT]
+
+  TB_12V:
+    type: Terminal strip +12 V
+    subtype: all pins joined
+    pinlabels: ["IN (fuse)", "to BUCK_5V", "to VALVE"]
+
+  TB_GND:
+    type: Terminal strip GND
+    subtype: all pins joined
+    pinlabels: ["IN (PSU)", "to BUCK_5V", "from BUCK_5V", "to ESP32", "to DRIVER", "to FLOW"]
+
+  TB_5V:
+    type: Terminal strip +5 V
+    subtype: all pins joined
+    pinlabels: ["IN (BUCK_5V)", "to ESP32", "to FLOW"]
+
+  BUCK_5V:
+    type: Buck module LM2596 / MP1584
+    subtype: set 5.0 V BEFORE ESP32
+    pinlabels: [IN+, IN-, OUT+, OUT-]
+
+  ESP32:
+    type: ESP32 DevKit V1 (30-pin)
+    subtype: power pins only
+    pinlabels: [VIN, GND]
+
+cables:
+  W_PSU_P: {<<: *power, wirecount: 1, colors: [RD]}
+  W_FUSE: {<<: *power, wirecount: 1, colors: [RD]}
+  W_PSU_N: {<<: *power, wirecount: 1, colors: [BK]}
+  W_BUCK_IN: {<<: *power, wirecount: 2, colors: [RD, BK]}
+  W_BUCK_OUT: {<<: *power, wirecount: 2, colors: [RD, BK]}
+  W_ESP_PWR:
+    <<: *signal
+    wirecount: 2
+    colors: [RD, BK]
+
+connections:
+  # 12 V input: PSU -> fuse -> +12 V strip
+  - - PSU_12V: [1]
+    - W_PSU_P: [1]
+    - FUSE_2A: [1]
+  - - FUSE_2A: [2]
+    - W_FUSE: [1]
+    - TB_12V: [1]
+  - - PSU_12V: [2]
+    - W_PSU_N: [1]
+    - TB_GND: [1]
+  # Buck converter (drawn on the left so the strips sit in the middle)
+  - - BUCK_5V: [1]
+    - W_BUCK_IN: [1]
+    - TB_12V: [2]
+  - - BUCK_5V: [2]
+    - W_BUCK_IN: [2]
+    - TB_GND: [2]
+  - - BUCK_5V: [3]
+    - W_BUCK_OUT: [1]
+    - TB_5V: [1]
+  - - BUCK_5V: [4]
+    - W_BUCK_OUT: [2]
+    - TB_GND: [3]
+  # ESP32 power
+  - - TB_5V: [2]
+    - W_ESP_PWR: [1]
+    - ESP32: [1]
+  - - TB_GND: [4]
+    - W_ESP_PWR: [2]
+    - ESP32: [2]

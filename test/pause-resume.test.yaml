@@ -1,0 +1,47 @@
+# Wokwi CLI scenario: start 1 L, pause with START after ~2 s, resume, finish.
+# Buttons are held until the expected serial line appears: a short press is
+# missed while an OLED redraw (~95 ms over I2C) blocks the loop.
+#
+#   pio run -e sim
+#   wokwi-cli --scenario test/pause-resume.test.yaml --timeout 30000 .
+name: Pause and resume a pour
+version: 1
+author: showdev
+
+steps:
+  - wait-serial: 'Flow SIMULATOR on'
+  - set-control:
+      part-id: pot1
+      control: position
+      value: 0.2
+  - delay: 200ms
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 1
+  - wait-serial: 'START target=1.00 L'
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 0
+  - delay: 2s
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 1
+  - wait-serial: 'PAUSE (Кнопка)'
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 0
+  - delay: 1s
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 1
+  - wait-serial: 'RESUME'
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 0
+  - wait-serial: 'STOP (Готово!)'

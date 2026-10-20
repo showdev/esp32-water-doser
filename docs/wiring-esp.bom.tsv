@@ -1,0 +1,18 @@
+Id	Description	Qty	Unit	Designators
+1	Cable, Dupont jumper, 2 x 0.25 mm²	0.8	m	W_BTN, W_FLOWLED, W_RESET, W_VALVELED
+2	Cable, Dupont jumper, 3 x 0.25 mm²	0.2	m	W_POT
+3	Cable, Dupont jumper, 4 x 0.25 mm²	0.2	m	W_OLED
+4	Cable, Hookup wire, stranded, 1 x 0.25 mm²	0.5	m	W_SIG
+5	Cable, Hookup wire, stranded, 2 x 0.25 mm²	0.5	m	W_SENS_PWR
+6	Cable, Sensor cable (3 wires, as supplied), 3 x 0.25 mm²	1	m	W_FLOW
+7	Connector, Divider (strip + 2 resistors), R1 10k, R2 20k, 4 pins	1		DIVIDER
+8	Connector, ESP32 DevKit V1 (30-pin), from the owner, 10 pins	1		ESP32
+9	Connector, Flow sensor YF-S201 / YF-B5, arrow = flow direction, 3 pins	1		FLOW
+10	Connector, Green LED + 220 Ω, water flowing, 2 pins	1		LED_FLOW
+11	Connector, Momentary button, NO, RESET, 2 pins	1		BTN_RESET
+12	Connector, Momentary button, NO, START, 2 pins	1		BTN_START
+13	Connector, Potentiometer 10 kΩ, volume knob, 3 pins	1		POT_VOLUME
+14	Connector, Red LED + 220 Ω, valve open, 2 pins	1		LED_VALVE
+15	Connector, SSD1306 0.96" I2C, 4 pins	1		OLED
+16	Connector, Terminal strip TB_5V, 1 pins	1		+5V (from wiring-power)
+17	Connector, Terminal strip TB_GND, 1 pins	1		GND (from wiring-power)

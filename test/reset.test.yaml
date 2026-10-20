@@ -1,0 +1,34 @@
+# Wokwi CLI scenario: start a pour, then RESET aborts it.
+#
+#   pio run -e sim
+#   wokwi-cli --scenario test/reset.test.yaml --timeout 30000 .
+name: Reset during a pour
+version: 1
+author: showdev
+
+steps:
+  - wait-serial: 'Flow SIMULATOR on'
+  - set-control:
+      part-id: pot1
+      control: position
+      value: 0.2
+  - delay: 200ms
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 1
+  - wait-serial: 'START target=1.00 L'
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 0
+  - delay: 2s
+  - set-control:
+      part-id: btnReset
+      control: pressed
+      value: 1
+  - wait-serial: 'RESET poured='
+  - set-control:
+      part-id: btnReset
+      control: pressed
+      value: 0

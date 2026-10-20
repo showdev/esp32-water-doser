@@ -20,10 +20,11 @@ steps:
       part-id: btn1
       control: pressed
       value: 1
-  - delay: 150ms
+  # hold until START: a short press is missed while an OLED redraw (~95 ms over
+  # I2C) blocks the loop, and START prints before the release
+  - wait-serial: 'START target=1.00 L'
   - set-control:
       part-id: btn1
       control: pressed
       value: 0
-  - wait-serial: 'START target=1.00 L'
   - wait-serial: 'STOP (Готово!)'
