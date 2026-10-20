@@ -1,0 +1,29 @@
+# Wokwi CLI scenario: pot at 20% (= 1.0 L), press the button,
+# expect the controller to stop at the limit. At 6 L/min this takes ~10 s.
+#
+#   pio run -e sim
+#   wokwi-cli --scenario test/dispense.test.yaml --timeout 30000 .
+#
+# Needs WOKWI_CLI_TOKEN (free, from https://wokwi.com/dashboard/ci).
+name: Dispense 1 litre and stop at limit
+version: 1
+author: showdev
+
+steps:
+  - wait-serial: 'Flow SIMULATOR on'
+  - set-control:
+      part-id: pot1
+      control: position
+      value: 0.2
+  - delay: 200ms
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 0
+  - wait-serial: 'START target=1.00 L'
+  - wait-serial: 'STOP (Готово!)'

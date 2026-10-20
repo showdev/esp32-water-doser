@@ -1,0 +1,91 @@
+# WireViz harness for the home bench stub.
+# Render:  wireviz docs/wiring.yml   -> wiring.svg / wiring.png / wiring.html
+# Source of truth for pins is ../PINOUT.md and src/main.cpp.
+
+metadata:
+  title: Water dispenser — bench stub wiring
+  pn: elefun/water-dispenser
+
+templates:
+  - &dupont
+    type: Dupont jumper
+    gauge: 0.25 mm2
+    length: 0.2
+
+connectors:
+  ESP32:
+    type: ESP32 DevKit V1 (30-pin)
+    subtype: header pins
+    pinlabels: [3V3, GND, D34, D26, D27, D32, D25, D33, D21, D22]
+    notes: Use a GND pin on either side; all are common.
+
+  POT_VOLUME:
+    type: Potentiometer 10 kΩ
+    subtype: volume knob
+    pinlabels: [VCC, SIG, GND]
+
+  BUTTON:
+    type: Tactile button
+    subtype: start / stop
+    pinlabels: [A, B]
+
+  LED_VALVE:
+    type: Red LED + 220 Ω
+    subtype: stands in for the valve
+    pinlabels: [Anode, Cathode]
+
+  LED_FLOW:
+    type: Green LED + 220 Ω
+    subtype: water is flowing
+    pinlabels: [Anode, Cathode]
+
+  OLED:
+    type: SSD1306 0.96" I2C
+    pinlabels: [VCC, GND, SDA, SCL]
+
+cables:
+  W_POT:
+    <<: *dupont
+    wirecount: 3
+    colors: [RD, GN, BK]
+  W_BTN:
+    <<: *dupont
+    wirecount: 2
+    colors: [BU, BK]
+  W_VALVE:
+    <<: *dupont
+    wirecount: 2
+    colors: [RD, BK]
+  W_FLOWLED:
+    <<: *dupont
+    wirecount: 2
+    colors: [GN, BK]
+  W_OLED:
+    <<: *dupont
+    wirecount: 4
+    colors: [RD, BK, YE, VT]
+  JUMPER_SIM:
+    <<: *dupont
+    wirecount: 1
+    colors: [OG]
+    notes: Simulator only. Remove when the real flow sensor goes on D27.
+
+connections:
+  - - POT_VOLUME: [1, 2, 3]
+    - W_POT: [1, 2, 3]
+    - ESP32: [1, 3, 2]
+  - - BUTTON: [1, 2]
+    - W_BTN: [1, 2]
+    - ESP32: [4, 2]
+  - - LED_VALVE: [1, 2]
+    - W_VALVE: [1, 2]
+    - ESP32: [7, 2]
+  - - LED_FLOW: [1, 2]
+    - W_FLOWLED: [1, 2]
+    - ESP32: [8, 2]
+  - - OLED: [1, 2, 3, 4]
+    - W_OLED: [1, 2, 3, 4]
+    - ESP32: [1, 2, 9, 10]
+  - - ESP32: [6]
+    - JUMPER_SIM: [1]
+    - ESP32: [5]
