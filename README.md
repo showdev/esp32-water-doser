@@ -1,6 +1,6 @@
-# Water dispenser
+# esp32-water-doser
 
-ESP32 controller that pours a set amount of water.
+ESP32 controller that pours a set amount of water. Screen texts are in Ukrainian; the table below gives each in English.
 
 1. Turn the knob (potentiometer) to choose a volume, 0–5 L.
 2. Press START: the valve opens. The target is locked; the knob is ignored until the pour ends.
@@ -18,14 +18,14 @@ Building the real device? See [docs/INSTALL.md](docs/INSTALL.md) (electrician gu
 
 | Event | Result | Screen |
 |-------|--------|--------|
-| Idle | Shows the volume selected by the knob | `Готово`, big number, `Кнопка = старт` |
-| START, idle | Valve opens, counting starts, target locked | `Наливаю`, poured / target, progress bar |
-| START while pouring | Valve closes, count kept | `Пауза` |
-| START while paused | Valve opens, counting continues | `Наливаю` |
-| Target reached | Valve closes, back to idle | `Готово!` |
-| No pulses for 5 s while open | Valve closes and pauses (dry run / no water); START resumes | `Немає води!` |
-| RESET, any state | Valve closes, count cleared, idle | `Скинуто` |
-| Volume too small (< 10 pulses) | Ignored | `Замало` |
+| Idle | Shows the volume selected by the knob | `Готово` (Ready), big number, `Кнопка = старт` (Button = start) |
+| START, idle | Valve opens, counting starts, target locked | `Наливаю` (Pouring), poured / target, progress bar |
+| START while pouring | Valve closes, count kept | `Пауза` (Paused) |
+| START while paused | Valve opens, counting continues | `Наливаю` (Pouring) |
+| Target reached | Valve closes, back to idle | `Готово!` (Done!) |
+| No pulses for 5 s while open | Valve closes and pauses (dry run / no water); START resumes | `Немає води!` (No water!) |
+| RESET, any state | Valve closes, count cleared, idle | `Скинуто` (Reset) |
+| Volume too small (< 10 pulses) | Ignored | `Замало` (Too little) |
 
 LEDs: **red** = valve commanded open, **green** = pulses actually arriving.
 Red without green means the valve is open but no water flows.
@@ -40,7 +40,6 @@ SSD1306 0.96" I2C OLED, one jumper wire D32 → D27 (START on D26, RESET on D13)
 Uses [PlatformIO](https://platformio.org/) (VS Code extension or `pip install platformio`).
 
 ```sh
-cd projects/water-dispenser
 pio run -e sim -t upload      # stub with built-in flow simulator
 pio device monitor            # 115200 baud
 ```
@@ -96,3 +95,7 @@ after the valve closes; if it overshoots, stop a few pulses early.
 | `docs/wiring-valve.yml` | WireViz source, real device: D4184 driver, valve, flyback diode; generated `.svg/.png/.bom.tsv` |
 | `docs/wiring-esp.yml` | WireViz source, real device: ESP32 with flow sensor, buttons, pot, OLED, LEDs; generated `.svg/.png/.bom.tsv` |
 | `docs/schematic-real.py` | schemdraw overview schematic of the real device; generates `schematic-real.svg` |
+
+## License
+
+MIT
