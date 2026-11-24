@@ -75,6 +75,7 @@ after the valve closes; if it overshoots, stop a few pulses early.
 
 - [x] Bench stub with flow simulator, OLED, status LEDs
 - [x] Wokwi circuit + scenario test, WireViz wiring diagram
+- [ ] Simulated water line + flow sensor as a Wokwi custom chip, real firmware in Wokwi — [plan](docs/PLAN-wokwi-water-line.md)
 - [ ] Verify on hardware, tune debounce and display
 - [ ] On site: choose valve (pressure vs. gravity tank), driver, power
 - [ ] Real sensor: level shifting, calibration, overshoot compensation
